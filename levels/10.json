@@ -1,0 +1,7 @@
+{
+  "name": "10",
+  "start": 0,
+  "timeLimitSec": 90,
+  "n": 10,
+  "layout": "random"
+}

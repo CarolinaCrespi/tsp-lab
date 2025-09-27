@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TSP Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Piccolo stile per lo switch lingua, neutro rispetto al tuo CSS */
+    .lang-switch{ margin-left:.5rem; display:inline-flex; gap:.4rem; }
+    .lang-switch button{
+      padding:.4rem .6rem; border-radius:.6rem; border:1px solid rgba(255,255,255,.15);
+      background:transparent; color:inherit; cursor:pointer; font:inherit;
+    }
+    .lang-switch button[aria-pressed="true"]{ background:rgba(255,255,255,.08); font-weight:700; }
+    @media (prefers-color-scheme: light){
+      .lang-switch button{ border-color:#d1d5db; }
+      .lang-switch button[aria-pressed="true"]{ background:#e5e7eb; }
+    }
+    header{ display:flex; align-items:center; gap:.6rem; justify-content:space-between; }
+    .header-right{ display:flex; align-items:center; gap:.5rem; }
+  </style>
+</head>
+
+<body>
+  <header>
+  <h1>LA SFIDA DEL COMMESSO VIAGGIATORE</h1>
+  <div class="lang">
+    <button id="btn-it" aria-pressed="true">IT</button>
+    <button id="btn-en" aria-pressed="false">EN</button>
+  </div>
+</header>
+
+
+  <main class="layout-3col">
+    <!-- Colonna SINISTRA -->
+    <aside class="left-pane">
+      <div class="card">
+        <p data-i18n="intro_p1">
+          Il <strong>Travelling Salesman Problem</strong> è un classico rompicapo 
+          dell’informatica e della matematica: un viaggiatore deve visitare 
+          tutte le città <em>una sola volta</em> e tornare al punto di partenza, 
+          cercando il percorso più breve possibile.
+        </p>
+        <p data-i18n="intro_p2">
+          Può sembrare semplice, ma diventa complicatissimo man mano che il numero 
+          di città cresce. Infatti le possibili combinazioni crescono a dismisura 
+          e nessun computer riesce a provarle tutte velocemente.
+        </p>
+        <p data-i18n="intro_p3">
+          Per questo motivo si usano due approcci: 
+          <strong>algoritmi esatti</strong> (che garantiscono la soluzione migliore, 
+          ma richiedono molto tempo) e <strong>algoritmi approssimati o metaeuristici</strong> 
+          (che trovano buone soluzioni in poco tempo, ma non sempre perfette).
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="howto_title">Istruzioni</h3>
+        <ol class="instructions">
+          <li data-i18n="howto_1">Scegli un livello e premi <strong>Carica</strong>.</li>
+          <li data-i18n="howto_2">Identifica la <strong>città di partenza</strong> (indicata in giallo).</li>
+          <li data-i18n="howto_3">Clicca sulle città nell’ordine in cui vuoi visitarle per costruire il tuo tour.</li>
+          <li data-i18n="howto_4">Quando hai selezionato tutte le città, il percorso si chiuderà automaticamente tornando alla partenza e vedrai la distanza totale.</li>
+          <li data-i18n="howto_5">Usa i bottoni a destra per confrontare la tua soluzione con quelle generate dagli algoritmi.</li>
+        </ol>
+        <div class="pill" data-i18n="note_letters">Nota: le lettere identificano le città, ma non danno un ordine di visita.</div>
+      </div>
+    </aside>
+
+    <!-- Colonna CENTRALE: controlli + canvas -->
+    <section class="center-pane">
+      <div class="stage">
+        <div class="controls controls-bar">
+          <label><span data-i18n="level_label">Livello:</span>
+            <select id="levelSelect" aria-label="Seleziona livello">
+              <!-- verrà popolato dallo script lingua -->
+            </select>
+          </label>
+          <button id="btnLoad" data-i18n="btn_load">Carica</button>
+          <button id="btnReset" data-i18n="btn_reset">Reset</button>
+          <span id="hud">Tu: –</span>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="canvas" width="900" height="600" aria-label="mappa TSP"></canvas>
+        </div>
+
+        <div id="legend" class="legend-outside"></div>
+      </div>
+    </section>
+
+    <!-- Colonna DESTRA: algoritmi -->
+    <aside class="right-pane sidebar">
+      <h3 data-i18n="exact_title">Algoritmi esatti</h3>
+      <div class="pill" data-i18n="exact_hint">Ottimo garantito (lenti su N grande)</div>
+      <button id="btnHK"  data-i18n="btn_hk">Held-Karp (DP)</button>
+      <button id="btnBF"  data-i18n="btn_bf">Brute Force (N≤11)</button>
+
+      <h3 data-i18n="heur_title">Euristiche (approssimate)</h3>
+      <div class="pill" data-i18n="heur_hint">Veloci, regole semplici</div>
+      <button id="btnNN"   data-i18n="btn_nn">Nearest Neighbor</button>
+      <button id="btn2Opt" data-i18n="btn_2opt">2-Opt</button>
+
+      <h3 data-i18n="meta_title">Metaeuristiche</h3>
+      <div class="pill" data-i18n="meta_hint">Strategie esplorative</div>
+      <button id="btnACO" data-i18n="btn_aco">ACO</button>
+      <button id="btnGA"  data-i18n="btn_ga">Genetic Algorithm</button>
+
+      <!-- Spiegazione dinamica -->
+      <div id="algoInfo" class="algo-info"></div>
+
+      <!-- Box fisso: differenza esatti vs approssimati -->
+      <div class="info-fixed">
+        <strong data-i18n="fixed_title">Esatti vs Approssimati</strong><br>
+        <span class="muted" data-i18n="fixed_text">
+          <em>Esatti</em>: trovano sempre il percorso ottimale, ma il tempo di calcolo
+          esplode man mano che il numero di città aumenta.<br>
+          <em>Euristiche</em>: regole semplici e veloci, non garantiscono l’ottimo.<br>
+          <em>Metaeuristiche</em>: ispirate a processi naturali (evoluzione, colonie di formiche),
+          migliorano le soluzioni con iterazioni successive.
+        </span>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footnote">
+    <span data-i18n="footer">Carolina Crespi ©</span>
+  </footer>
+
+  <!-- Switch lingua (non tocca main.js) -->
+  <script>
+    const TSP_I18N = {
+      it: {
+        page_title:"TSP Lab",
+        title:"LA SFIDA DEL COMMESSO VIAGGIATORE",
+        intro_p1:"Il <strong>Travelling Salesman Problem</strong> è un classico rompicapo dell’informatica e della matematica: un viaggiatore deve visitare tutte le città <em>una sola volta</em> e tornare al punto di partenza, cercando il percorso più breve possibile.",
+        intro_p2:"Può sembrare semplice, ma diventa complicatissimo man mano che il numero di città cresce. Infatti le possibili combinazioni crescono a dismisura e nessun computer riesce a provarle tutte velocemente.",
+        intro_p3:"Per questo motivo si usano due approcci: <strong>algoritmi esatti</strong> (che garantiscono la soluzione migliore, ma richiedono molto tempo) e <strong>algoritmi approssimati o metaeuristici</strong> (che trovano buone soluzioni in poco tempo, ma non sempre perfette).",
+        howto_title:"Istruzioni",
+        howto_1:"Scegli un livello e premi <strong>Carica</strong>.",
+        howto_2:"Identifica la <strong>città di partenza</strong> (indicata in giallo).",
+        howto_3:"Clicca sulle città nell’ordine in cui vuoi visitarle per costruire il tuo tour.",
+        howto_4:"Quando hai selezionato tutte le città, il percorso si chiuderà automaticamente tornando alla partenza e vedrai la distanza totale.",
+        howto_5:"Usa i bottoni a destra per confrontare la tua soluzione con quelle generate dagli algoritmi.",
+        note_letters:"Nota: le lettere identificano le città, ma non danno un ordine di visita.",
+        level_label:"Livello:",
+        btn_load:"Carica",
+        btn_reset:"Reset",
+        exact_title:"Algoritmi esatti",
+        exact_hint:"Ottimo garantito (lenti su N grande)",
+        heur_title:"Euristiche (approssimate)",
+        heur_hint:"Veloci, regole semplici",
+        meta_title:"Metaeuristiche",
+        meta_hint:"Strategie esplorative",
+        btn_hk:"Held-Karp (DP)",
+        btn_bf:"Brute Force (N≤11)",
+        btn_nn:"Nearest Neighbor",
+        btn_2opt:"2-Opt",
+        btn_aco:"ACO",
+        btn_ga:"Genetic Algorithm",
+        fixed_title:"Esatti vs Approssimati",
+        fixed_text:"<em>Esatti</em>: trovano sempre il percorso ottimale, ma il tempo di calcolo esplode man mano che il numero di città aumenta.<br><em>Euristiche</em>: regole semplici e veloci, non garantiscono l’ottimo.<br><em>Metaeuristiche</em>: ispirate a processi naturali (evoluzione, colonie di formiche), migliorano le soluzioni con iterazioni successive.",
+        footer:"Carolina Crespi ©",
+        // livelli
+        levels:[
+          {v:"10", it:"Facile (10)"         , en:"Easy (10)"},
+          {v:"20", it:"Medio (20)"          , en:"Medium (20)"},
+          {v:"30", it:"Difficile (30)"      , en:"Hard (30)"},
+          {v:"40", it:"Molto difficile (40)", en:"Very hard (40)"},
+          {v:"50", it:"Estremo (50)"        , en:"Extreme (50)"},
+          {v:"60", it:"Estremo+ (60)"       , en:"Extreme+ (60)"}
+        ],
+        // testi algoritmi (per #algoInfo)
+        info:{
+          hk:"<b>Held-Karp (programmazione dinamica)</b>: calcola l’ottimo garantito in <i>O(n²·2ⁿ)</i>. Perfetto per N piccoli, cresce molto rapidamente.",
+          bf:"<b>Brute Force</b>: prova tutte le permutazioni dei tour (N!), garantisce l’ottimo ma è usabile solo per pochi nodi.",
+          nn:"<b>Nearest Neighbor</b>: parti da una città e scegli sempre la più vicina non ancora visitata. Veloce, qualità variabile.",
+          opt2:"<b>2-Opt</b>: migliora iterativamente il tour scambiando coppie di archi se accorcia la lunghezza totale.",
+          aco:"<b>Ant Colony Optimization</b>: metaeuristica ispirata alle colonie di formiche; bilancia esplorazione e sfruttamento tramite feromone.",
+          ga:"<b>Algoritmo Genetico</b>: evolve una popolazione di tour con selezione, crossover e mutazione per cercare soluzioni migliori."
+        }
+      },
+      en: {
+        page_title:"TSP Lab",
+        title:"THE TRAVELLING SALESMAN PROBLEM",
+        intro_p1:"The <strong>Travelling Salesman Problem</strong> asks for the shortest tour that visits each city <em>exactly once</em> and returns to the start.",
+        intro_p2:"It looks simple, but gets very hard as the number of cities grows: the combinations explode and no computer can try them all quickly.",
+        intro_p3:"Hence two families of methods: <strong>exact algorithms</strong> (guarantee the best solution, but may take a long time) and <strong>approximate/metaheuristic algorithms</strong> (find good solutions fast, not always perfect).",
+        howto_title:"How to play",
+        howto_1:"Pick a level and press <strong>Load</strong>.",
+        howto_2:"Find the <strong>starting city</strong> (highlighted in yellow).",
+        howto_3:"Click cities in the order you want to visit them to build your tour.",
+        howto_4:"When all cities are selected, the tour closes back to start and the total length appears.",
+        howto_5:"Use the buttons on the right to compare your tour with algorithmic solutions.",
+        note_letters:"Note: letters identify cities but do not impose an order.",
+        level_label:"Level:",
+        btn_load:"Load",
+        btn_reset:"Reset",
+        exact_title:"Exact algorithms",
+        exact_hint:"Optimal guaranteed (slow for large N)",
+        heur_title:"Heuristics (approximate)",
+        heur_hint:"Fast, simple rules",
+        meta_title:"Metaheuristics",
+        meta_hint:"Exploratory strategies",
+        btn_hk:"Held-Karp (DP)",
+        btn_bf:"Brute Force (N≤11)",
+        btn_nn:"Nearest Neighbor",
+        btn_2opt:"2-Opt",
+        btn_aco:"ACO",
+        btn_ga:"Genetic Algorithm",
+        fixed_title:"Exact vs Approximate",
+        fixed_text:"<em>Exact</em>: always return the optimal tour but runtime explodes as cities increase.<br><em>Heuristics</em>: simple and fast, no optimality guarantee.<br><em>Metaheuristics</em>: nature-inspired (evolution, ant colonies), iteratively improve solutions.",
+        footer:"Carolina Crespi ©",
+        levels:[
+          {v:"10", it:"Facile (10)"         , en:"Easy (10)"},
+          {v:"20", it:"Medio (20)"          , en:"Medium (20)"},
+          {v:"30", it:"Difficile (30)"      , en:"Hard (30)"},
+          {v:"40", it:"Molto difficile (40)", en:"Very hard (40)"},
+          {v:"50", it:"Estremo (50)"        , en:"Extreme (50)"},
+          {v:"60", it:"Estremo+ (60)"       , en:"Extreme+ (60)"}
+        ],
+        info:{
+          hk:"<b>Held-Karp (dynamic programming)</b>: guarantees the optimum in <i>O(n²·2ⁿ)</i>. Great for small N, grows very quickly.",
+          bf:"<b>Brute Force</b>: tries all permutations of tours (N!); optimal but only feasible for very small graphs.",
+          nn:"<b>Nearest Neighbor</b>: start anywhere and always choose the closest unvisited city. Very fast; quality varies.",
+          opt2:"<b>2-Opt</b>: iteratively improves the tour by swapping two edges if it shortens the length.",
+          aco:"<b>Ant Colony Optimization</b>: pheromone-based metaheuristic balancing exploration and exploitation.",
+          ga:"<b>Genetic Algorithm</b>: evolves a population of tours with selection, crossover and mutation."
+        }
+      }
+    };
+
+    const $ = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>[...r.querySelectorAll(s)];
+    let tspLang = localStorage.getItem('tsp_lang') ||
+                  ((navigator.language||'it').toLowerCase().startsWith('en')?'en':'it');
+
+    function fillLevels(){
+      const sel = $('#levelSelect');
+      if(!sel) return;
+      const cur = sel.value;
+      sel.innerHTML='';
+      TSP_I18N.it.levels.forEach(row=>{
+        const o = document.createElement('option');
+        o.value = row.v;
+        o.textContent = (tspLang==='en'? row.en : row.it);
+        sel.appendChild(o);
+      });
+      if(cur) sel.value = cur;
+    }
+
+    function setLang(lang){
+      tspLang = lang;
+      const d = TSP_I18N[lang];
+
+      // testi semplici
+      $$('[data-i18n]').forEach(el=>{
+        const k = el.getAttribute('data-i18n');
+        if(d[k]) el.innerHTML = d[k];
+      });
+
+      // titolo pagina + lang attribute
+      document.title = d.page_title || document.title;
+      document.documentElement.lang = lang;
+
+      // ricrea la tendina livelli nella lingua corrente
+      fillLevels();
+
+      // stato bottoni
+      $('#btn-it')?.setAttribute('aria-pressed', lang==='it');
+      $('#btn-en')?.setAttribute('aria-pressed', lang==='en');
+
+      localStorage.setItem('tsp_lang', lang);
+    }
+
+    // Spiegazioni algoritmi (sovrascrive eventuale testo messo da main.js)
+    function bindAlgoTexts(){
+      const info = $('#algoInfo');
+      if(!info) return;
+      const put = html => { setTimeout(()=> info.innerHTML = html, 0); };
+      $('#btnHK')   ?.addEventListener('click', ()=> put(TSP_I18N[tspLang].info.hk));
+      $('#btnBF')   ?.addEventListener('click', ()=> put(TSP_I18N[tspLang].info.bf));
+      $('#btnNN')   ?.addEventListener('click', ()=> put(TSP_I18N[tspLang].info.nn));
+      $('#btn2Opt') ?.addEventListener('click', ()=> put(TSP_I18N[tspLang].info.opt2));
+      $('#btnACO')  ?.addEventListener('click', ()=> put(TSP_I18N[tspLang].info.aco));
+      $('#btnGA')   ?.addEventListener('click', ()=> put(TSP_I18N[tspLang].info.ga));
+    }
+
+    // Bind toggle
+    $('#btn-it')?.addEventListener('click', ()=>setLang('it'));
+    $('#btn-en')?.addEventListener('click', ()=>setLang('en'));
+
+    // Init
+    setLang(tspLang);
+    bindAlgoTexts();
+  </script>
+
+  <script src="main.js"></script>
+</body>
+</html>

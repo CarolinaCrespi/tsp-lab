@@ -1,0 +1,362 @@
+/* =========================================================
+   DARK THEME — Variabili base
+========================================================= */
+:root{
+  --bg: #0d121c;
+  --bg-2: #111827;
+  --panel: #131b2a;
+  --panel-2: #172133;
+  --border: #1e2633;
+  --ink: #e6ebff;
+  --ink-2: #cdd7f3;
+  --muted: #a9b3c7;
+  --accent: #4a8bff;
+
+  --brand-yellow: #f6d34a;
+  --brand-yellow-glow: rgba(246,211,74,.55);
+}
+
+/* =========================================================
+   Reset & base
+========================================================= */
+*{ box-sizing: border-box; }
+html, body{ height:100%; }
+body{
+  margin:0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans",
+               "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+/* =========================================================
+   HEADER (titolo centrato) + FOOTER
+========================================================= */
+/* === Header: titolo sempre centrato, switch lingua a destra === */
+header{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* sx | centro | dx */
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #0e1420 0%, #0d121c 100%);
+}
+header h1{
+  grid-column: 2;            /* colonna centrale */
+  justify-self: center;
+  margin: 0;
+  font-size: 40px;
+  font-weight: 1000;
+  color: var(--brand-yellow);
+  text-shadow: 0 0 8px var(--brand-yellow-glow);
+  text-align: center;
+}
+
+
+/* il gruppo lingua deve avere class="lang" */
+header .lang{
+  grid-column: 3;            /* colonna destra */
+  justify-self: end;
+  display: inline-flex;
+  gap: 8px;
+}
+
+/* pulsanti lingua visibili */
+header .lang button{
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+header .lang button[aria-pressed="true"]{
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  background: #1b2944;   /* più scuro = leggibile */
+  color: #eaf0ff;
+}
+
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+main.layout{
+  display:grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+/* 3 colonne: sidebars larghe, centro elastico */
+main.layout-3col{
+  display:grid;
+  grid-template-columns: 370px minmax(500px, 1fr) 370px;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.left-pane{
+  border-right: 1px solid var(--border);
+  padding-right: 12px;
+}
+.right-pane{
+  border-left: 1px solid var(--border);
+  padding-left: 12px;
+}
+.center-pane{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =========================================================
+   CONTROLLI (barra sopra il canvas)
+========================================================= */
+.controls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap: wrap;
+}
+.controls label{ color: var(--ink-2); }
+.controls select,
+.controls button{
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.controls button{ cursor:pointer; }
+.controls button:hover{ filter: brightness(1.08); }
+#hud{ margin-left:auto; color: var(--ink-2); }
+
+.controls-bar{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.controls-bar #hud{ margin-left:auto; }
+
+/* Allineo barra, canvas e legenda */
+.center-pane .controls-bar,
+.center-pane .canvas-wrap,
+.center-pane #legend{
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* =========================================================
+   CANVAS
+========================================================= */
+.canvas-wrap{
+  display:flex;
+  justify-content:center;
+}
+#canvas{
+  width: 1000px;          /* dimensione visiva */
+  max-width: 100%;        /* non uscire su schermi piccoli */
+  height: auto;
+  display:block;
+  background: #0b111b;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+}
+
+/* =========================================================
+   SIDEBAR DESTRA (algoritmi)
+========================================================= */
+.sidebar h3{
+  margin: 8px 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.sidebar button{
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sidebar button:hover{ filter: brightness(1.12); }
+
+/* Pills (etichette sezione) */
+.pill{
+  display:inline-block;
+  padding: 4px 8px;
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: var(--ink-2);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+/* Box descrittivi (info algoritmo) */
+.algo-info{
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink-2);
+  line-height: 1.4;
+  display: none;
+}
+.algo-info.show{ display:block; }
+.algo-info h4{ margin: 0 0 6px 0; font-size: 14px; color: var(--ink); }
+.algo-info .meta{ font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+.info-fixed{
+  margin-top: 12px;
+  padding: 12px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #0f1624;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.info-fixed .muted{ color: var(--muted); }
+
+/* =========================================================
+   SIDEBAR SINISTRA (introduzione + istruzioni)
+========================================================= */
+.card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  color: var(--ink-2);
+}
+.card h3{
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Testi sinistra più compatti */
+.left-pane .card{
+  font-size: 14px;
+  line-height: 1.5;
+}
+.left-pane .instructions{
+  margin: 8px 0 8px;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.left-pane .instructions li{ margin-bottom: 6px; }
+.left-pane .hint{
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* =========================================================
+   LEGENDA
+========================================================= */
+.legend-outside{
+  font-size: 12px;
+  color: var(--ink-2);
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content: center;
+  flex-wrap:wrap;
+  padding: 8px 2px 0 2px;
+}
+.legend-chip{ display:inline-flex; align-items:center; gap:6px; }
+.legend-line{ width: 38px; height: 0; border-top: 2px solid currentColor; }
+.legend-dash-long{ border-top-style: dashed; }
+.legend-dash-short{ border-top-style: dashed; }
+
+/* =========================================================
+   ACCESSIBILITÀ / HELPERS
+========================================================= */
+button:focus, select:focus{
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Spazio tra barra controlli e canvas */
+.center-pane .controls-bar { margin-bottom: 12px; }
+
+/* =========================================================
+   LIGHT THEME — Override variabili
+   (se mai riattiverai il toggle tema)
+========================================================= */
+:root[data-theme="light"]{
+  --bg: #f5f7fa;
+  --bg-2: #ffffff;
+  --panel: #eef2f7;
+  --panel-2: #e7edf7;
+  --border: #cfd8e3;
+  --ink: #1c1c1c;
+  --ink-2: #2a2f36;
+  --muted: #606a78;
+  --accent: #0b63ff;
+
+  --brand-yellow: #c49a14;
+  --brand-yellow-glow: rgba(196,154,20,.35);
+}
+:root[data-theme="light"] header{
+  background: linear-gradient(180deg, #f7f9fc 0%, #f5f7fa 100%);
+  border-bottom-color: var(--border);
+}
+:root[data-theme="light"] #canvas{ background: #ffffff; }
+:root[data-theme="light"] .info-fixed{
+  background: #eef4ff;
+  border-color: #cfd8e3;
+  color: #2a2f36;
+}
+:root[data-theme="light"] .info-fixed strong{ color:#1c1c1c; }
+:root[data-theme="light"] .lang-switch button[aria-pressed="true"]{
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(11,99,255,.25);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media (max-width: 1200px){
+  main.layout-3col{
+    grid-template-columns: 300px minmax(420px, 1fr) 300px;
+  }
+}
+@media (max-width: 980px){
+  main.layout-3col{
+    grid-template-columns: 1fr; /* stack verticale */
+  }
+  .left-pane, .right-pane{
+    border: none;
+    padding: 0;
+  }
+  .center-pane .controls-bar,
+  .center-pane .canvas-wrap,
+  .center-pane #legend{
+    max-width: 100%;
+  }
+
+  /* su mobile porto i bottoni lingua in alto a destra senza sovrapporsi */
+  .header-right{
+    right: 8px;
+  }
+}
